@@ -32,3 +32,12 @@ Damn, where is my SSH key? *HLYFCKINSHT*
 ---
 * Q: ```Why can't I see any Chinese from your activity?```
 * A: ```How did you know I'm a Chinese?```
+
+---
+* Q: ```Why do you star your own project?```
+* A: ```Shame? No, that's pretty useful for agile working, A-G-I-L-E! (I shouldn't have told you I can easily enter the repo instead of wasting time)```
+
+
+---
+* Q: ```Why can't you use bookmark?```
+* A: ```Bookmark and leave it into thousands of m8s? Chrome needs 10 seconds to display my bookmarks from menu, and they always say the newer chrome will be faster than the elder one, bullshit.```
