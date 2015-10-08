@@ -9,17 +9,26 @@ This repo contains some patterns (code? pseudo code? text? meme?) to stay whatev
 
 Damn, where is my SSH key? *HLYFCKINSHT*
 
+---
 * Q: ```What's the purpose of this repo?```
-* A: ```You will see many patterns with lots of weird and so called fcking hard languages, but don't worry, I can understand it. *what? U want to understand it as well? Why not buy TAOCP first?```
+* A: ```You will see many patterns with lots of weird and so called fcking hard languages, but don't worry, I can understand it. ``` *Wut? U want to understand it as well? Why not buy TAOCP first?*
 
+---
 * Q: ```Why put them into 1 jumbo repo?```
 * A: ```Because I can.```
 
+---
 * Q: ```Can I use it under Windows?```
 * A: ```No.```
 
+---
 * Q: ```Can I use it under Mac?```
 * A: ```No.```
 
+---
 * Q: ```Can I use it under OpenVMS?```
 * A: ```Buy it from HP first.```
+
+---
+* Q: ```Why can't I see any Chinese from your activity?```
+* A: ```How did you know I'm a Chinese?```
