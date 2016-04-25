@@ -4,6 +4,7 @@ Sample code of running package manager in waf script.
 """
 
 import os
+import platform
 from waflib import Logs
 
 def builddep(ctx):
