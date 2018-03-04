@@ -6,7 +6,7 @@ void swapval(int *x, int *y) {
 }
 
 void main(void) {
-    printf("test\n");
+    printf("Swap Value Test\n");
     int a = 10; int b = 20;
     printf("Before swap, a is %d, b is %d.\n", a, b);
     swapval(&a, &b);
