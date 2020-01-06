@@ -28,7 +28,6 @@ driver_path = r"C:\Users\cawk\Desktop\chromedriver.exe" # chromedriver path. mak
 ime_url = 'http://retailerreports.trusthss.com/ReportServer/Pages/ReportViewer.aspx?/Retailer+Reports/ResultsVsPreviousYear_BySourceAffiliateStore&rs:Command=Render'
 today = date.today().strftime("%Y-%m-%d") # Today pattern
 new_xlsname = 'IME_Lowes_'+today+'.xls' # Name pattern
-xlsfiles = os.listdir(download_dir)
 
 class IME_Lowes():
     def main(self):
@@ -79,13 +78,14 @@ class IME_Lowes():
             for x in xls_fp.iterdir():
                 xls_ts += [time.strftime('%Y/%m/%d', time.gmtime(os.path.getmtime(x)))]
 
+            xlsfiles = os.listdir(download_dir) # Must get file list after the last download
             for f, t in zip(xlsfiles, xls_ts):
                 xlsname, xlsext = os.path.splitext(f)
                 # Right now we only have one file per day.
                 if xlsname.startswith('ResultsVs') and xlsext == '.xls' and t == date.today().strftime("%Y/%m/%d"):
                     shutil.move(os.path.join(download_dir, f), os.path.join(download_dir, new_xlsname))
                 else:
-                    pass #TODO rename based on file creation datetime
+                    pass #TODO rename based on file creation datetime, check to see if it is a successful download
 
 if __name__ == "__main__":
     IME_Lowes().main()
