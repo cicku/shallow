@@ -9,6 +9,7 @@ Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed
 with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
 
+import logging
 import os
 import pathlib
 import shutil
@@ -22,8 +23,13 @@ from selenium.webdriver.support import expected_conditions as EC
 
 if sys.version_info[:2] < (3, 7):
     raise SystemExit('Error: Python 3.7 is required!')
+"""
+IME Spider
+TODO: If multiple URLs are needed, refactoring to class method is required.
+"""
 
-download_dir = "C:\IME" # Download folder
+download_dir = r"C:\IME" # Where to save files
+nas_dir = r"O:\IME reports" # Local copy
 driver_path = r"C:\Users\cawk\Desktop\chromedriver.exe" # chromedriver path. make sure Chrome auto update is OFF.
 ime_url = 'http://retailerreports.trusthss.com/ReportServer/Pages/ReportViewer.aspx?/Retailer+Reports/ResultsVsPreviousYear_BySourceAffiliateStore&rs:Command=Render'
 today = date.today().strftime("%Y-%m-%d") # Today pattern
@@ -69,7 +75,7 @@ class IME_Lowes():
             time.sleep(5)
             self.driver.find_element(By.LINK_TEXT, "Excel").click()
             #self.driver.find_element_by_partial_link_text('Excel').click()
-            time.sleep(15) # Increase the value if loading takes too long.
+            time.sleep(60) # Increase the value if loading takes too long.
         finally:
             self.driver.quit() # Quit before file transaction.
 
@@ -78,14 +84,26 @@ class IME_Lowes():
             for x in xls_fp.iterdir():
                 xls_ts += [time.strftime('%Y/%m/%d', time.gmtime(os.path.getmtime(x)))]
 
-            xlsfiles = os.listdir(download_dir) # Must get file list after the last download
+            xlsfiles = os.listdir(download_dir)
+
             for f, t in zip(xlsfiles, xls_ts):
                 xlsname, xlsext = os.path.splitext(f)
                 # Right now we only have one file per day.
-                if xlsname.startswith('ResultsVs') and xlsext == '.xls' and t == date.today().strftime("%Y/%m/%d"):
+                # if xlsname.startswith('ResultsVs') and xlsext == '.xls' and t == date.today().strftime("%Y/%m/%d"):
+                if f == "ResultsVsPreviousYear_BySourceAffiliateStore.xls" and t == date.today().strftime("%Y/%m/%d"):
                     shutil.move(os.path.join(download_dir, f), os.path.join(download_dir, new_xlsname))
+                    shutil.copy2(os.path.join(download_dir, new_xlsname), os.path.join(nas_dir, new_xlsname))
+                    print(f, t, "Done")                     # TODO Log
                 else:
-                    pass #TODO rename based on file creation datetime, check to see if it is a successful download
+                    print(f, t, "Error") # TODO rename based on file creation datetime
+                    # TODO Log
 
 if __name__ == "__main__":
-    IME_Lowes().main()
+	tried = 0
+	while not os.path.exists(os.path.join(download_dir, new_xlsname)):
+		print(f"IME report of {today} is not found, downloading...")
+		IME_Lowes().main()
+		time.sleep(60)
+		tried += 1
+		if tried > 20:
+			break
