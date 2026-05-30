@@ -464,7 +464,11 @@
       .footer-grid {
         display: grid;
         grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-        gap: clamp(24px, 4vw, 56px);
+        grid-template-areas:
+          "about diag"
+          "bottom diag";
+        column-gap: clamp(24px, 4vw, 56px);
+        row-gap: 0;
         border: 1px solid var(--hairline);
         border-bottom: 0;
       }
@@ -472,7 +476,13 @@
       .footer-diag {
         padding: clamp(24px, 3vw, 36px);
       }
-      .footer-about { border-right: 1px solid var(--hairline); }
+      .footer-about { grid-area: about; border-right: 1px solid var(--hairline); padding-bottom: 0; }
+      .footer-diag { grid-area: diag; }
+      .footer-bottom {
+        grid-area: bottom;
+        border-right: 1px solid var(--hairline);
+        padding: 0 clamp(24px, 3vw, 36px) clamp(24px, 3vw, 36px);
+      }
       .footer-about h2,
       .footer-diag h2 {
         margin: 0 0 14px;
@@ -644,8 +654,16 @@
       }
 
       @media (max-width: 860px) {
-        .footer-grid { grid-template-columns: minmax(0, 1fr); }
-        .footer-about { border-right: 0; border-bottom: 1px solid var(--hairline); }
+        .footer-grid {
+          grid-template-columns: minmax(0, 1fr);
+          grid-template-areas: "about" "diag" "bottom";
+        }
+        .footer-about {
+          border-right: 0;
+          border-bottom: 1px solid var(--hairline);
+          padding-bottom: clamp(24px, 3vw, 36px);
+        }
+        .footer-bottom { border-right: 0; }
         .link-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       }
       @media (max-width: 480px) {
@@ -700,7 +718,7 @@
     <div class="crosshair" id="crosshair" aria-hidden="true">
       <div class="vline" id="cxV"></div>
       <div class="hline" id="cxH"></div>
-      <div class="readout" id="cxR"><div id="cxX">x: 0</div><div id="cxY">y: 0</div></div>
+      <div class="readout" id="cxR"><div id="cxX">x: 0</div><div id="cxY">y: 0</div><div id="cxS">scroll: 0%</div></div>
     </div>
 
     <div class="corner tl" id="cornerTL" aria-hidden="true"></div>
@@ -841,7 +859,48 @@
                 </ul>
               </div>
             </div>
+          </div>
 
+          <div class="footer-diag">
+            <h2>Diagnostics</h2>
+            <div class="diag-grid">
+              <div class="drow"><span class="dk">Platform</span><span class="dv" id="dPlatform">—</span></div>
+              <div class="drow"><span class="dk">Language</span><span class="dv" id="dLang">—</span></div>
+              <div class="drow"><span class="dk">Network</span><span class="dv" id="dNet">—</span></div>
+              <div class="drow"><span class="dk">Memory</span><span class="dv" id="dMem">—</span></div>
+              <div class="drow"><span class="dk">Cores</span><span class="dv" id="dCores">—</span></div>
+              <div class="drow"><span class="dk">Uptime</span><span class="dv" id="dUptime">—</span></div>
+              <div class="drow"><span class="dk">Viewport</span><span class="dv" id="dViewport">—</span></div>
+              <div class="drow"><span class="dk">Screen</span><span class="dv" id="dScreen">—</span></div>
+              <div class="drow"><span class="dk">Color Depth</span><span class="dv" id="dDepth">—</span></div>
+              <div class="drow"><span class="dk">Pixel Ratio</span><span class="dv" id="dDpr">—</span></div>
+              <div class="drow"><span class="dk">Timezone</span><span class="dv" id="dTz">—</span></div>
+              <div class="drow"><span class="dk">Host</span><span class="dv" id="dHost">—</span></div>
+              <div class="drow"><span class="dk">Cookies</span><span class="dv" id="dCookies">—</span></div>
+              <div class="drow"><span class="dk">Java</span><span class="dv" id="dJava">DISABLED</span></div>
+              <div class="drow"><span class="dk">WebGL</span><span class="dv" id="dWebgl">—</span></div>
+              <div class="drow"><span class="dk">Battery</span><span class="dv" id="dBattery">—</span></div>
+              <div class="drow"><span class="dk">Geolocation</span><span class="dv" id="dGeo">—</span></div>
+              <div class="drow"><span class="dk">Local Storage</span><span class="dv" id="dLocal">—</span></div>
+              <div class="drow"><span class="dk">Session Storage</span><span class="dv" id="dSession">—</span></div>
+              <div class="drow"><span class="dk">IndexedDB</span><span class="dv" id="dIdb">—</span></div>
+              <div class="drow"><span class="dk">Stat</span><span class="dv ok" id="dStat">ONLINE</span></div>
+              <div class="drow"><span class="dk">Downlink</span><span class="dv" id="dDownlink">—</span></div>
+              <div class="drow"><span class="dk">RTT</span><span class="dv" id="dRtt">—</span></div>
+              <div class="drow"><span class="dk">Save Data</span><span class="dv" id="dSaveData">—</span></div>
+              <div class="drow"><span class="dk">Page Load</span><span class="dv" id="dLoad">—</span></div>
+              <div class="drow"><span class="dk">Do Not Track</span><span class="dv" id="dDnt">—</span></div>
+              <div class="drow"><span class="dk">Ad Block</span><span class="dv" id="dAdblock">—</span></div>
+              <div class="drow"><span class="dk">GPU</span><span class="dv" id="dGpu">—</span></div>
+              <div class="drow"><span class="dk">Languages</span><span class="dv" id="dLangs">—</span></div>
+            </div>
+            <div class="user-agent">
+              <span class="dk">User Agent:</span>
+              <span class="dv" id="dUA">—</span>
+            </div>
+          </div>
+
+          <div class="footer-bottom">
             <div class="footer-meta">
               <a class="trust" href="https://www.cloudflare.com/">
                 <span class="badge" aria-hidden="true">
@@ -870,37 +929,6 @@
               <a href="#">Terms of Service</a>
             </div>
             <div class="copyright">CICKU © 2026</div>
-          </div>
-
-          <div class="footer-diag">
-            <h2>Diagnostics</h2>
-            <div class="diag-grid">
-              <div class="drow"><span class="dk">Platform</span><span class="dv" id="dPlatform">—</span></div>
-              <div class="drow"><span class="dk">Language</span><span class="dv" id="dLang">—</span></div>
-              <div class="drow"><span class="dk">Network</span><span class="dv" id="dNet">—</span></div>
-              <div class="drow"><span class="dk">Memory</span><span class="dv" id="dMem">—</span></div>
-              <div class="drow"><span class="dk">Cores</span><span class="dv" id="dCores">—</span></div>
-              <div class="drow"><span class="dk">Uptime</span><span class="dv" id="dUptime">—</span></div>
-              <div class="drow"><span class="dk">Viewport</span><span class="dv" id="dViewport">—</span></div>
-              <div class="drow"><span class="dk">Screen</span><span class="dv" id="dScreen">—</span></div>
-              <div class="drow"><span class="dk">Color Depth</span><span class="dv" id="dDepth">—</span></div>
-              <div class="drow"><span class="dk">Pixel Ratio</span><span class="dv" id="dDpr">—</span></div>
-              <div class="drow"><span class="dk">Timezone</span><span class="dv" id="dTz">—</span></div>
-              <div class="drow"><span class="dk">Host</span><span class="dv" id="dHost">—</span></div>
-              <div class="drow"><span class="dk">Cookies</span><span class="dv" id="dCookies">—</span></div>
-              <div class="drow"><span class="dk">Java</span><span class="dv" id="dJava">DISABLED</span></div>
-              <div class="drow"><span class="dk">WebGL</span><span class="dv" id="dWebgl">—</span></div>
-              <div class="drow"><span class="dk">Battery</span><span class="dv" id="dBattery">—</span></div>
-              <div class="drow"><span class="dk">Geolocation</span><span class="dv" id="dGeo">—</span></div>
-              <div class="drow"><span class="dk">Local Storage</span><span class="dv" id="dLocal">—</span></div>
-              <div class="drow"><span class="dk">Session Storage</span><span class="dv" id="dSession">—</span></div>
-              <div class="drow"><span class="dk">IndexedDB</span><span class="dv" id="dIdb">—</span></div>
-              <div class="drow"><span class="dk">Stat</span><span class="dv ok" id="dStat">ONLINE</span></div>
-            </div>
-            <div class="user-agent">
-              <span class="dk">User Agent:</span>
-              <span class="dv" id="dUA">—</span>
-            </div>
           </div>
         </div>
       </footer>
@@ -1164,6 +1192,47 @@
           return false;
         }
       }
+      function detectGpu() {
+        try {
+          const c = document.createElement("canvas");
+          const gl = c.getContext("webgl") || c.getContext("experimental-webgl");
+          if (!gl) return null;
+          const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+          if (!dbg) return null;
+          const vendor = gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL);
+          const renderer = gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL);
+          const parts = [vendor, renderer].filter(Boolean);
+          return parts.length ? parts.join(" · ") : null;
+        } catch (e) {
+          return null;
+        }
+      }
+      function detectDnt() {
+        const v =
+          navigator.doNotTrack ||
+          window.doNotTrack ||
+          navigator.msDoNotTrack;
+        if (v === "1" || v === "yes" || v === true) return "ENABLED";
+        if (v === "0" || v === "no") return "DISABLED";
+        return "UNSET";
+      }
+      function detectAdblock(cb) {
+        const bait = document.createElement("div");
+        bait.className = "adsbox ad-banner ads ad-placement pub_300x250";
+        bait.style.cssText =
+          "position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;";
+        bait.innerHTML = "&nbsp;";
+        document.body.appendChild(bait);
+        window.setTimeout(function () {
+          const blocked =
+            bait.offsetHeight === 0 ||
+            bait.offsetParent === null ||
+            getComputedStyle(bait).display === "none" ||
+            getComputedStyle(bait).visibility === "hidden";
+          bait.remove();
+          cb(blocked);
+        }, 120);
+      }
       (function () {
         const vw = window.innerWidth, vh = window.innerHeight;
         const sw = window.screen.width, sh = window.screen.height;
@@ -1199,6 +1268,38 @@
         set("dSession", storageOK("sessionStorage") ? "AVAILABLE" : "BLOCKED");
         set("dIdb", "indexedDB" in window ? "AVAILABLE" : "NONE");
         set("dUA", navigator.userAgent);
+
+        const conn = navigator.connection || {};
+        set("dDownlink", conn.downlink != null ? conn.downlink + " Mbps" : "—");
+        set("dRtt", conn.rtt != null ? conn.rtt + " ms" : "—");
+        set("dSaveData", conn.saveData != null ? (conn.saveData ? "ON" : "OFF") : "—");
+        set("dDnt", detectDnt());
+        set("dGpu", detectGpu() || "MASKED");
+        set("dLangs", (navigator.languages && navigator.languages.length ? navigator.languages.join(", ") : navigator.language) || "—");
+
+        function setLoad() {
+          let ms = null;
+          const nav = performance.getEntriesByType &&
+            performance.getEntriesByType("navigation")[0];
+          if (nav && nav.loadEventEnd > 0) ms = nav.loadEventEnd - nav.startTime;
+          else if (performance.timing && performance.timing.loadEventEnd > 0)
+            ms = performance.timing.loadEventEnd - performance.timing.navigationStart;
+          if (ms == null || ms < 0) ms = performance.now();
+          set("dLoad", Math.round(ms) + " ms");
+        }
+        if (document.readyState === "complete") setLoad();
+        else window.addEventListener("load", function () { setTimeout(setLoad, 0); });
+
+        const adEl = document.getElementById("dAdblock");
+        detectAdblock(function (blocked) {
+          if (blocked) {
+            adEl.textContent = "DETECTED";
+            adEl.classList.remove("ok");
+          } else {
+            adEl.textContent = "NONE";
+            adEl.classList.add("ok");
+          }
+        });
 
         const statEl = document.getElementById("dStat");
         function setOnline() {
@@ -1317,6 +1418,14 @@
         const r = document.getElementById("cxR");
         const xEl = document.getElementById("cxX");
         const yEl = document.getElementById("cxY");
+        const sEl = document.getElementById("cxS");
+        function scrollPct() {
+          const max =
+            (document.documentElement.scrollHeight || 0) - window.innerHeight;
+          if (max <= 0) return 0;
+          const sy = window.scrollY || window.pageYOffset || 0;
+          return Math.round(Math.min(100, Math.max(0, (sy / max) * 100)));
+        }
         let lx = 0, ly = 0, pending = false;
         window.addEventListener("mousemove", function (e) {
           lx = e.clientX; ly = e.clientY;
@@ -1328,11 +1437,15 @@
             v.style.transform = "translateX(" + lx + "px)";
             h.style.transform = "translateY(" + ly + "px)";
             const labelX = lx + 78 > window.innerWidth ? lx - 70 : lx + 12;
-            const labelY = ly + 46 > window.innerHeight ? ly - 40 : ly + 12;
+            const labelY = ly + 58 > window.innerHeight ? ly - 52 : ly + 12;
             r.style.transform = "translate(" + labelX + "px," + labelY + "px)";
             xEl.textContent = "x: " + lx;
             yEl.textContent = "y: " + ly;
+            sEl.textContent = "scroll: " + scrollPct() + "%";
           });
+        }, { passive: true });
+        window.addEventListener("scroll", function () {
+          sEl.textContent = "scroll: " + scrollPct() + "%";
         }, { passive: true });
         window.addEventListener("mouseleave", function () { cx.classList.remove("active"); });
       })();
