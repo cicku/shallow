@@ -894,6 +894,7 @@
               <div class="drow"><span class="dk">Ad Block</span><span class="dv" id="dAdblock">—</span></div>
               <div class="drow"><span class="dk">GPU</span><span class="dv" id="dGpu">—</span></div>
               <div class="drow"><span class="dk">Languages</span><span class="dv" id="dLangs">—</span></div>
+              <div class="drow"><span class="dk">Fonts</span><span class="dv" id="dFonts">—</span></div>
             </div>
             <div class="user-agent">
               <span class="dk">User Agent:</span>
@@ -1234,6 +1235,54 @@
           cb(blocked);
         }, 120);
       }
+      function detectFonts() {
+        const bases = ["monospace", "sans-serif", "serif"];
+        const test = "mmmmmmmmmmlli WWWeeegg 0123456789";
+        const list = [
+          "Andale Mono", "Arial", "Arial Black", "Arial Narrow", "Arial Rounded MT Bold",
+          "Bahnschrift", "Baskerville", "Big Caslon", "Bodoni 72", "Book Antiqua",
+          "Bookman Old Style", "Bradley Hand", "Brush Script MT", "Calibri", "Cambria",
+          "Candara", "Century Gothic", "Century Schoolbook", "Comic Sans MS", "Consolas",
+          "Constantia", "Corbel", "Courier", "Courier New", "DejaVu Sans", "DejaVu Sans Mono",
+          "DejaVu Serif", "Didot", "DIN Alternate", "DIN Condensed", "Ebrima", "Franklin Gothic Medium",
+          "Futura", "Gabriola", "Garamond", "Geneva", "Georgia", "Gill Sans", "Helvetica",
+          "Helvetica Neue", "Hoefler Text", "Impact", "Ink Free", "Lato", "Liberation Mono",
+          "Liberation Sans", "Liberation Serif", "Lucida Bright", "Lucida Console", "Lucida Grande",
+          "Lucida Sans Unicode", "Malgun Gothic", "Marker Felt", "Menlo", "Microsoft Sans Serif",
+          "Monaco", "Monotype Corsiva", "MS Gothic", "MS PGothic", "MV Boli", "Myanmar Text",
+          "Nirmala UI", "Noto Sans", "Noto Serif", "Open Sans", "Optima", "Palatino",
+          "Palatino Linotype", "Papyrus", "Perpetua", "PT Sans", "Rockwell", "Roboto",
+          "Segoe Print", "Segoe Script", "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+          "SimSun", "Sitka", "Skia", "Snell Roundhand", "Source Sans Pro", "Sylfaen",
+          "Tahoma", "Times", "Times New Roman", "Trebuchet MS", "Ubuntu", "Ubuntu Mono",
+          "Verdana", "Yu Gothic", "Zapfino",
+        ];
+        const span = document.createElement("span");
+        span.setAttribute("aria-hidden", "true");
+        span.textContent = test;
+        span.style.cssText =
+          "position:absolute;left:-9999px;top:-9999px;font-size:72px;line-height:normal;white-space:nowrap;visibility:hidden;";
+        document.body.appendChild(span);
+        const bw = {}, bh = {};
+        for (let i = 0; i < bases.length; i++) {
+          span.style.fontFamily = bases[i];
+          bw[bases[i]] = span.offsetWidth;
+          bh[bases[i]] = span.offsetHeight;
+        }
+        const detected = [];
+        for (let i = 0; i < list.length; i++) {
+          for (let j = 0; j < bases.length; j++) {
+            const b = bases[j];
+            span.style.fontFamily = '"' + list[i] + '",' + b;
+            if (span.offsetWidth !== bw[b] || span.offsetHeight !== bh[b]) {
+              detected.push(list[i]);
+              break;
+            }
+          }
+        }
+        document.body.removeChild(span);
+        return detected;
+      }
       (function () {
         const vw = window.innerWidth, vh = window.innerHeight;
         const sw = window.screen.width, sh = window.screen.height;
@@ -1250,13 +1299,44 @@
 
         set("dPlatform", (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || "Unknown");
         set("dLang", navigator.language || "—");
-        fetch("/cdn-cgi/trace", { cache: "no-store" })
-          .then(function (r) { return r.ok ? r.text() : Promise.reject(); })
-          .then(function (t) {
+        const knownIps = new Set();
+        let rtcRefresh = function () {};
+        (function () {
+          function parseIp(t) {
             const m = /(?:^|\n)ip=([^\n]+)/.exec(t);
-            set("dIp", m ? m[1].trim() : "UNKNOWN");
-          })
-          .catch(function () { set("dIp", "UNAVAILABLE"); });
+            return m ? m[1].trim() : null;
+          }
+          const ips = { v4: null, v6: null };
+          let pending = 2;
+          function render() {
+            const list = [];
+            if (ips.v4) list.push(ips.v4);
+            if (ips.v6 && ips.v6 !== ips.v4) list.push(ips.v6);
+            if (list.length) set("dIp", list.join(", "));
+            knownIps.clear();
+            if (ips.v4) knownIps.add(ips.v4);
+            if (ips.v6) knownIps.add(ips.v6);
+            rtcRefresh();
+          }
+          function settle() {
+            pending -= 1;
+            if (pending === 0 && !ips.v4 && !ips.v6) {
+              fetch("/cdn-cgi/trace", { cache: "no-store" })
+                .then(function (r) { return r.ok ? r.text() : Promise.reject(); })
+                .then(function (t) { set("dIp", parseIp(t) || "UNKNOWN"); })
+                .catch(function () { set("dIp", "UNAVAILABLE"); });
+            }
+          }
+          function grab(url, fam) {
+            fetch(url, { cache: "no-store" })
+              .then(function (r) { return r.text(); })
+              .then(function (t) { ips[fam] = parseIp(t); render(); })
+              .catch(function () {})
+              .then(settle);
+          }
+          grab("https://1.1.1.1/cdn-cgi/trace", "v4");
+          grab("https://[2606:4700:4700::1111]/cdn-cgi/trace", "v6");
+        })();
 
         (function () {
           const RTC =
@@ -1282,13 +1362,21 @@
               iceCandidatePoolSize: 1,
             });
           } catch (e) { set("dRtcIp", "UNAVAILABLE"); return; }
+          function render() {
+            const extra = found.filter(function (x) {
+              return !knownIps.has(x) && !/\.local$/i.test(x);
+            });
+            if (extra.length) set("dRtcIp", extra.join(", "));
+            else if (found.length) set("dRtcIp", "—");
+          }
+          rtcRefresh = render;
           function add(addr) {
             if (!addr) return;
             const m = ipRe.exec(addr);
             if (!m) return;
             if (found.indexOf(m[1]) === -1) {
               found.push(m[1]);
-              set("dRtcIp", found.join(", "));
+              render();
             }
           }
           function finish(msg) {
@@ -1333,6 +1421,13 @@
         set("dDnt", detectDnt());
         set("dGpu", detectGpu() || "MASKED");
         set("dLangs", (navigator.languages && navigator.languages.length ? navigator.languages.join(", ") : navigator.language) || "—");
+        setTimeout(function () {
+          const fEl = document.getElementById("dFonts");
+          if (!fEl) return;
+          const f = detectFonts();
+          fEl.textContent = f.length + " detected";
+          if (f.length) fEl.title = f.join(", ");
+        }, 60);
 
         function setLoad() {
           let ms = null;
