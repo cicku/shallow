@@ -1303,39 +1303,38 @@
         let rtcRefresh = function () {};
         (function () {
           function parseIp(t) {
+            t = (t || "").trim();
             const m = /(?:^|\n)ip=([^\n]+)/.exec(t);
-            return m ? m[1].trim() : null;
+            if (m) return m[1].trim();
+            if (/^[0-9a-f.:]+$/i.test(t) && t.length <= 45) return t;
+            return null;
           }
-          const ips = { v4: null, v6: null };
-          let pending = 2;
+          const v4 = [], v6 = [];
           function render() {
-            const list = [];
-            if (ips.v4) list.push(ips.v4);
-            if (ips.v6 && ips.v6 !== ips.v4) list.push(ips.v6);
-            if (list.length) set("dIp", list.join(", "));
+            const list = v4.concat(v6);
+            if (!list.length) return;
+            set("dIp", list.join(", "));
             knownIps.clear();
-            if (ips.v4) knownIps.add(ips.v4);
-            if (ips.v6) knownIps.add(ips.v6);
+            list.forEach(function (x) { knownIps.add(x); });
             rtcRefresh();
           }
-          function settle() {
-            pending -= 1;
-            if (pending === 0 && !ips.v4 && !ips.v6) {
-              fetch("/cdn-cgi/trace", { cache: "no-store" })
-                .then(function (r) { return r.ok ? r.text() : Promise.reject(); })
-                .then(function (t) { set("dIp", parseIp(t) || "UNKNOWN"); })
-                .catch(function () { set("dIp", "UNAVAILABLE"); });
-            }
+          function classify(ip) {
+            if (!ip) return;
+            const bucket = ip.indexOf(":") >= 0 ? v6 : v4;
+            if (bucket.indexOf(ip) === -1) { bucket.push(ip); render(); }
           }
-          function grab(url, fam) {
+          function grab(url) {
             fetch(url, { cache: "no-store" })
-              .then(function (r) { return r.text(); })
-              .then(function (t) { ips[fam] = parseIp(t); render(); })
-              .catch(function () {})
-              .then(settle);
+              .then(function (r) { return r.ok ? r.text() : Promise.reject(); })
+              .then(function (t) { classify(parseIp(t)); })
+              .catch(function () {});
           }
-          grab("https://1.1.1.1/cdn-cgi/trace", "v4");
-          grab("https://[2606:4700:4700::1111]/cdn-cgi/trace", "v6");
+          grab("/cdn-cgi/trace");
+          grab("https://4.cicku.me");
+          grab("https://6.cicku.me");
+          setTimeout(function () {
+            if (!v4.length && !v6.length) set("dIp", "UNAVAILABLE");
+          }, 5000);
         })();
 
         (function () {
