@@ -1270,7 +1270,17 @@
           let done = false;
           let pc;
           try {
-            pc = new RTC({ iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }] });
+            pc = new RTC({
+              iceServers: [
+                { urls: [
+                  "stun:stun.cloudflare.com:3478",
+                  "stun:stun.l.google.com:19302",
+                  "stun:stun1.l.google.com:19302",
+                  "stun:stun.l.google.com:5349",
+                ] },
+              ],
+              iceCandidatePoolSize: 1,
+            });
           } catch (e) { set("dRtcIp", "UNAVAILABLE"); return; }
           function add(addr) {
             if (!addr) return;
