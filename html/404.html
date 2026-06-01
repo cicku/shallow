@@ -629,6 +629,7 @@
         word-break: break-all;
         font-variant-numeric: tabular-nums;
       }
+      .diag-grid .dv#dIp, .diag-grid .dv#dRtcIp { white-space: pre-line; }
       .diag-grid .dv.ok { display: inline-flex; align-items: center; gap: 6px; justify-content: flex-end; }
       .diag-grid .dv.ok::before {
         content: "";
@@ -1313,7 +1314,7 @@
           function render() {
             const list = v4.concat(v6);
             if (!list.length) return;
-            set("dIp", list.join(", "));
+            set("dIp", list.join("\n"));
             knownIps.clear();
             list.forEach(function (x) { knownIps.add(x); });
             rtcRefresh();
@@ -1330,8 +1331,8 @@
               .catch(function () {});
           }
           grab("/cdn-cgi/trace");
-          grab("https://4.cicku.me");
-          grab("https://6.cicku.me");
+          grab("https://4.cicku.me/cdn-cgi/trace");
+          grab("https://6.cicku.me/cdn-cgi/trace");
           setTimeout(function () {
             if (!v4.length && !v6.length) set("dIp", "UNAVAILABLE");
           }, 5000);
@@ -1365,7 +1366,7 @@
             const extra = found.filter(function (x) {
               return !knownIps.has(x) && !/\.local$/i.test(x);
             });
-            if (extra.length) set("dRtcIp", extra.join(", "));
+            if (extra.length) set("dRtcIp", extra.join("\n"));
             else if (found.length) set("dRtcIp", "—");
           }
           rtcRefresh = render;
