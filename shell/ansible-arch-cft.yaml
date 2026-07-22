@@ -1,0 +1,68 @@
+# A bare Arch "base" install can ship without Python, and Ansible modules need
+# it on the managed node — bootstrap it with `raw` before anything else runs.
+- name: Bootstrap Python on Arch Linux
+  hosts: arch
+  gather_facts: false
+  tasks:
+    - name: Install Python if missing
+      raw: command -v python3 || pacman -Sy --noconfirm python
+      changed_when: false
+
+- name: Install Arch base + cloudflared and set the timezone to US Eastern (EDT)
+  hosts: arch
+  become: true
+  vars:
+    system_timezone: America/New_York
+
+    base_packages:
+      - base
+      - linux
+      - linux-firmware
+
+    # Leave empty to just install the binary. Set a Cloudflare Tunnel token (from
+    # the Zero Trust dashboard) to also install + enable cloudflared as a service.
+    cloudflared_tunnel_token: ""
+
+  tasks:
+    - name: Synchronise the pacman package database
+      community.general.pacman:
+        update_cache: true
+
+    - name: Install Arch Linux base packages
+      community.general.pacman:
+        name: "{{ base_packages }}"
+        state: present
+
+    - name: Install cloudflared
+      community.general.pacman:
+        name: cloudflared
+        state: present
+
+    - name: Set the system timezone
+      community.general.timezone:
+        name: "{{ system_timezone }}"
+
+    - name: Enable network time synchronisation (systemd-timesyncd)
+      service:
+        name: systemd-timesyncd.service
+        state: started
+        enabled: true
+
+    # `cloudflared service install <token>` writes the unit, enables and starts it.
+    - name: Install cloudflared tunnel as a system service
+      command: "cloudflared service install {{ cloudflared_tunnel_token }}"
+      args:
+        creates: /etc/systemd/system/cloudflared.service
+      when: cloudflared_tunnel_token | length > 0
+
+    - name: Verify installed versions and current time
+      command: "{{ item }}"
+      register: version_output
+      changed_when: false
+      loop:
+        - "cloudflared --version"
+        - "timedatectl show --property=Timezone --value"
+
+    - name: Show results
+      debug:
+        var: version_output.results
